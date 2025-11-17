@@ -1,12 +1,24 @@
-# Archivos de entorno virtual
+# Environment
 venv/
 env/
+.env
+*.env
+
+# Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
 
-# Archivos de configuración
-.env
-*.log
+# Database
+*.db
+*.sqlite
+*.sqlite3
 
-# Archivos del sistema
-.DS_Store
+# Cache
+puntuaciones_temp.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
