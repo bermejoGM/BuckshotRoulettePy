@@ -145,12 +145,12 @@ class Puntuacion:
             
             resultados = db.execute_query(query, (limite,), fetch=True)
             
-            # Formatear resultados
+            # ⭐ FIX: Acceder por nombre de columna en lugar de índice
             ranking = [
                 {
-                    'nombre': row[0],
-                    'puntos': row[1],
-                    'fecha': row[2] if row[2] else None
+                    'nombre': row['nombre'],      # ✅ BIEN
+                    'puntos': row['puntos'],      # ✅ BIEN
+                    'fecha': row['fecha'] if row['fecha'] else None  # ✅ BIEN
                 }
                 for row in resultados
             ]
@@ -160,47 +160,7 @@ class Puntuacion:
         except Exception as e:
             logger.error(f"❌ Error al obtener ranking: {e}")
             raise
-    
-    @staticmethod
-    def obtener_ranking_por_fecha(limite=10, fecha_desde=None):
-        """
-        Obtener ranking filtrado por fecha
-        """
-        try:
-            if fecha_desde:
-                query = """
-                    SELECT nombre, puntos, fecha
-                    FROM puntuaciones
-                    WHERE fecha >= ?
-                    ORDER BY puntos DESC, fecha DESC
-                    LIMIT ?
-                """
-                params = (fecha_desde, limite)
-            else:
-                query = """
-                    SELECT nombre, puntos, fecha
-                    FROM puntuaciones
-                    ORDER BY puntos DESC, fecha DESC
-                    LIMIT ?
-                """
-                params = (limite,)
-            
-            resultados = db.execute_query(query, params, fetch=True)
-            
-            ranking = [
-                {
-                    'nombre': row[0],
-                    'puntos': row[1],
-                    'fecha': row[2] if row[2] else None
-                }
-                for row in resultados
-            ]
-            
-            return ranking
-        
-        except Exception as e:
-            logger.error(f"❌ Error al obtener ranking por fecha: {e}")
-            raise
+
     
     @staticmethod
     def obtener_estadisticas():
@@ -221,10 +181,10 @@ class Puntuacion:
             
             if resultado:
                 return {
-                    'total_partidas': resultado[0],
-                    'promedio_puntos': round(float(resultado[1]), 2) if resultado[1] else 0,
-                    'max_puntos': resultado[2] if resultado[2] else 0,
-                    'min_puntos': resultado[3] if resultado[3] else 0
+                    'total_partidas': resultado['total_partidas'],        # ← Cambio aquí
+                    'promedio_puntos': round(float(resultado['promedio_puntos']), 2) if resultado['promedio_puntos'] else 0,  # ← Cambio aquí
+                    'max_puntos': resultado['max_puntos'] if resultado['max_puntos'] else 0,  # ← Cambio aquí
+                    'min_puntos': resultado['min_puntos'] if resultado['min_puntos'] else 0   # ← Cambio aquí
                 }
             
             return {
@@ -237,6 +197,7 @@ class Puntuacion:
         except Exception as e:
             logger.error(f"❌ Error al obtener estadísticas: {e}")
             raise
+
 
 
 

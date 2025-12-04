@@ -142,27 +142,36 @@ class APIClient:
         POST /api/iniciar_juego
         Iniciar nueva partida
         """
+        print(f"📡 Enviando petición iniciar_juego con nombre: {nombre}")  # ← Añade
         datos = {'nombre': nombre}
         resultado = self._reintentar_peticion('iniciar_juego', 'POST', datos)
-    
+
         if not resultado.get('error'):
             self.session_id = resultado.get('session_id')
-    
-            return resultado
+            print(f"✅ Session ID guardado: {self.session_id[:8] if self.session_id else 'NONE'}...")  # ← Añade
+
+        return resultado
+
 
     def disparar(self, objetivo):
         """
         POST /api/disparar
         Realizar disparo
         """
+        print(f"🔍 Verificando session_id: {self.session_id[:8] if self.session_id else 'NONE'}")  # ← Añade
+        
         if not self.session_id:
+            print("❌ ERROR: No hay session_id activo")  # ← Añade
             return {'error': True, 'mensaje': 'Sin sesión activa'}
+        
+        print(f"📡 Enviando disparo - Objetivo: {objetivo}")  # ← Añade
         
         datos = {
             'session_id': self.session_id,
             'objetivo': objetivo
         }
         return self._reintentar_peticion('disparar', 'POST', datos)
+
     
     def turno_bot(self):
         """

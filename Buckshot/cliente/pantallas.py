@@ -170,7 +170,7 @@ class PantallaJuego:
         self.puntos = datos.get('puntos', self.puntos)
         self.balas_restantes = datos.get('balas_restantes', self.balas_restantes)
         self.mensaje = datos.get('mensaje', self.mensaje)
-        self.turno_jugador = not datos.get('cambiar_turno', False) if datos.get('cambiar_turno') is not None else self.turno_jugador
+        self.turno_jugador = datos.get('turno_jugador', self.turno_jugador)
     
     def dibujar_stat_box(self, x, y, label, valor, color=(255, 0, 0)):
         """Dibujar caja de estadística"""
@@ -297,7 +297,11 @@ class PantallaRanking:
         
         # Lista de ranking
         y = 200
-        for i, (nombre, puntos, fecha) in enumerate(self.ranking[:10], 1):
+        for i, item in enumerate(self.ranking[:10], 1):
+            nombre = item['nombre']      # ⭐ AÑADE ESTO
+            puntos = item['puntos']      # ⭐ AÑADE ESTO
+            fecha = item.get('fecha')    # ⭐ AÑADE ESTO
+            
             # Fondo item
             item_rect = pygame.Rect(100, y, 600, 30)
             color_fondo = (50, 50, 50) if i % 2 == 0 else (40, 40, 40)

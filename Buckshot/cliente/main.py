@@ -7,6 +7,7 @@ import sys
 from pantallas import PantallaInicio, PantallaJuego, PantallaRanking
 from api_client import APIClient
 
+
 class BuckshotRouletteGame:
     def __init__(self):
         pygame.init()
@@ -39,36 +40,47 @@ class BuckshotRouletteGame:
     def iniciar_juego(self, nombre):
         """Iniciar nueva partida"""
         self.nombre_jugador = nombre
+        print(f"🎮 Iniciando juego para: {nombre}")  # ← Añade esto
         resultado = self.api_client.iniciar_juego(nombre)
+        
+        print(f"📥 Respuesta de iniciar_juego: {resultado}")  # ← Añade esto
         
         if resultado and not resultado.get('error'):
             self.datos_juego = resultado
             self.pantalla_actual = "juego"
             self.pantallas["juego"].actualizar_datos(resultado)
+            print(f"✅ Juego iniciado correctamente")  # ← Añade esto
             return True
         else:
-            # Error de conexión - modo offline
-            print("Error al conectar con servidor")
+            print(f"❌ Error al conectar con servidor: {resultado}")  # ← Añade esto
             return False
+
     
     def disparar(self, objetivo):
         """Realizar disparo"""
+        print(f"🎯 Intentando disparar a: {objetivo}")
+        print(f"🔑 Session ID actual: {self.api_client.session_id[:8] if self.api_client.session_id else 'NONE'}")
+        
         resultado = self.api_client.disparar(objetivo)
+        
+        print(f"📥 Respuesta de disparar: {resultado}")
         
         if resultado and not resultado.get('error'):
             self.datos_juego.update(resultado)
             self.pantallas["juego"].actualizar_datos(resultado)
             
-            # Game over
             if resultado.get('game_over'):
                 self.pantalla_actual = "ranking"
                 self.cargar_ranking()
             
             return resultado
+        else:
+            print(f"❌ Error en disparar: {resultado}")
         return None
-    
+
     def turno_bot(self):
         """Ejecutar turno del bot"""
+        print("🤖 Ejecutando turno del bot...")
         resultado = self.api_client.turno_bot()
         
         if resultado and not resultado.get('error'):
@@ -81,6 +93,7 @@ class BuckshotRouletteGame:
             
             return resultado
         return None
+
     
     def cargar_ranking(self):
         """Cargar ranking global"""
@@ -111,17 +124,14 @@ class BuckshotRouletteGame:
         running = True
         
         while running:
-            # Eventos
             events = pygame.event.get()
             for event in events:
                 if event.type == pygame.QUIT:
                     running = False
             
-            # Render pantalla actual
             pantalla = self.pantallas[self.pantalla_actual]
             accion = pantalla.render(events)
             
-            # Procesar acciones
             if accion:
                 if accion['tipo'] == 'iniciar_juego':
                     self.iniciar_juego(accion['nombre'])
@@ -141,7 +151,6 @@ class BuckshotRouletteGame:
                 elif accion['tipo'] == 'salir':
                     running = False
             
-            # Update display
             pygame.display.flip()
             self.clock.tick(self.FPS)
         

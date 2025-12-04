@@ -171,28 +171,29 @@ def disparar():
         # Verificar game over
         game_over = sesion['vidas_jugador'] <= 0 or sesion['vidas_bot'] <= 0
         
+        # Preparar respuesta ANTES de borrar sesión
+        respuesta = {
+            'success': True,
+            'mensaje': resultado['mensaje'],
+            'vidas_jugador': sesion['vidas_jugador'],
+            'vidas_bot': sesion['vidas_bot'],
+            'puntos': sesion['puntos'],
+            'balas_restantes': len(sesion['escopeta']),
+            'cambiar_turno': resultado['cambiar_turno'],
+            'turno_jugador': sesion['turno_jugador'],
+            'game_over': game_over
+        }
+        
         if game_over:
-            # Guardar puntuación
             Puntuacion.guardar(sesion['nombre'], sesion['puntos'], session_id)
             SesionJuego.finalizar(session_id, sesion['puntos'], sesion['balas_disparadas'])
             
-            # Limpiar sesión
-            del sesiones[session_id]
-            
             if sesion['vidas_bot'] <= 0:
-                resultado['mensaje'] = "🎉 ¡VICTORIA! Derrotaste al bot"
+                respuesta['mensaje'] = "🎉 ¡VICTORIA! Derrotaste al bot"
+            
+            del sesiones[session_id]
         
-        return jsonify({
-            'success': True,
-            'mensaje': resultado['mensaje'],
-            'vidas_jugador': sesion.get('vidas_jugador', 0),
-            'vidas_bot': sesion.get('vidas_bot', 0),
-            'puntos': sesion.get('puntos', 0),
-            'balas_restantes': len(sesion.get('escopeta', [])),
-            'cambiar_turno': resultado['cambiar_turno'],
-            'turno_jugador': sesion.get('turno_jugador', True),
-            'game_over': game_over
-        }), 200
+        return jsonify(respuesta), 200
     
     except Exception as e:
         logger.error(f"❌ Error en disparar: {e}")
