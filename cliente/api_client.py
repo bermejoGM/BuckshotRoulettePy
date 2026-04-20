@@ -13,7 +13,7 @@ class APIClient:
         self.timeout = 5
         self.session_id = None
         self.cache_file = "puntuaciones_temp.json"
-        print(f"🔧 API Client inicializado con URL: {self.base_url}")
+        print(f"[INFO] API Client inicializado con URL: {self.base_url}")
     
     def _hacer_peticion(self, endpoint, metodo="GET", datos=None):
         """
@@ -33,23 +33,23 @@ class APIClient:
             return response.json()
         
         except requests.exceptions.ConnectionError:
-            print(f"❌ Error de conexión: No se puede conectar al servidor {self.base_url}")
+            print(f"[ERROR] Error de conexion: No se puede conectar al servidor {self.base_url}")
             return {'error': True, 'mensaje': 'Sin conexión al servidor'}
         
         except requests.exceptions.Timeout:
-            print(f"⏱️ Timeout: El servidor tardó demasiado en responder")
+            print(f"[ERROR] Timeout: El servidor tardo demasiado en responder")
             return {'error': True, 'mensaje': 'Timeout del servidor'}
         
         except requests.exceptions.HTTPError as e:
-            print(f"❌ Error HTTP {e.response.status_code}: {e}")
+            print(f"[ERROR] Error HTTP {e.response.status_code}: {e}")
             return {'error': True, 'mensaje': f'Error del servidor: {e.response.status_code}'}
         
         except requests.exceptions.RequestException as e:
-            print(f"❌ Error en petición: {e}")
+            print(f"[ERROR] Error en peticion: {e}")
             return {'error': True, 'mensaje': 'Error en la petición'}
         
         except json.JSONDecodeError:
-            print("❌ Error: Respuesta del servidor no es JSON válido")
+            print("[ERROR] Error: Respuesta del servidor no es JSON valido")
             return {'error': True, 'mensaje': 'Respuesta inválida del servidor'}
     
     def _reintentar_peticion(self, endpoint, metodo="GET", datos=None, intentos=3):
@@ -62,7 +62,7 @@ class APIClient:
             if not resultado.get('error'):
                 return resultado
             
-            print(f"🔄 Reintentando... ({intento + 1}/{intentos})")
+            print(f"[INFO] Reintentando... ({intento + 1}/{intentos})")
         
         # Si todos los intentos fallan, guardar en cache local
         if metodo == "POST" and endpoint == "guardar_puntuacion":
@@ -98,7 +98,7 @@ class APIClient:
             print(f"💾 Puntuación guardada localmente (sin conexión)")
         
         except Exception as e:
-            print(f"❌ Error al guardar localmente: {e}")
+            print(f"[ERROR] Error al guardar localmente: {e}")
     
     def sincronizar_cache(self):
         """
@@ -130,10 +130,10 @@ class APIClient:
                 with open(self.cache_file, 'w') as f:
                     json.dump(cache_actualizado, f, indent=2)
                 
-                print(f"✅ {len(sincronizadas)} puntuaciones sincronizadas")
+                print(f"[OK] {len(sincronizadas)} puntuaciones sincronizadas")
         
         except Exception as e:
-            print(f"❌ Error al sincronizar cache: {e}")
+            print(f"[ERROR] Error al sincronizar cache: {e}")
     
     # ========== ENDPOINTS DEL JUEGO ==========
     

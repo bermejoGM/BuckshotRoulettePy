@@ -1,0 +1,57 @@
+# ======================== BUCKSHOT ROULETTE - COMANDOS ========================
+# 
+# IMPORTANTE: Ahora usamos MongoDB Atlas (en la nube) en lugar de PostgreSQL
+# NO necesitas instalar nada localmente (salvo Python y Pygame)
+#
+# ============================================================================
+
+# ======================== MIGRACIÓN A MONGODB ATLAS ==========================
+# 1. Crear cuenta gratuita: https://www.mongodb.com/cloud/atlas
+# 2. Crear un Cluster M0 (tier gratuito)
+# 3. Crear usuario de BD con contraseña
+# 4. Permitir tu IP en Network Access
+# 5. Copiar connection string (mongodb+srv://...)
+# 6. Crear archivo .env con MONGODB_URL
+# 
+# Ver archivo: MONGODB_MIGRATION.md para guía completa paso a paso
+# ============================================================================
+
+# ======================== ARRANCAR SERVIDOR Y CLIENTE =========================
+# OPCIÓN 1: Script CMD (Recomendado en Windows) ✨
+.\start_all.bat
+
+# OPCIÓN 2: Script PowerShell
+powershell -ExecutionPolicy Bypass -File start_all.ps1
+
+# OPCIÓN 3: Script Python (Multiplataforma)
+python start_all.py
+
+# OPCIÓN 4: Manualmente (abrir 2 terminales)
+# Terminal 1 - Servidor:
+cd servidor
+python app.py
+
+# Terminal 2 - Cliente:
+cd cliente
+python main.py
+
+# ======================== CREAR ARCHIVO .env ================================
+# Copia .env.ejemplo a .env
+copy .env.ejemplo .env
+
+# Edita .env con tu MONGODB_URL:
+# MONGODB_URL=mongodb+srv://usuario:contraseña@cluster-name.mongodb.net/?retryWrites=true&w=majority
+
+# ======================== VERIFICAR CONEXIÓN MONGODB ========================
+cd servidor
+python init_db.py
+
+# ======================== DEPURACIÓN ==========================================
+# Si hay errores de conexión a MongoDB:
+# 1. Verifica que el Cluster esté "Running" en MongoDB Atlas
+# 2. Verifica que tu IP esté permitida en Network Access
+# 3. Verifica que la contraseña en MONGODB_URL sea correcta
+# 4. Verifica que el archivo .env existe y tiene MONGODB_URL
+
+# Si falta pymongo:
+pip install pymongo==4.6.0

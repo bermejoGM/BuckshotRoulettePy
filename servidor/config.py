@@ -12,15 +12,12 @@ class Config:
     SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
     DEBUG = os.getenv('FLASK_DEBUG', 'False') == 'True'
     
-    # Database
-    DATABASE_URL = os.getenv('DATABASE_URL', 'postgresql://localhost/buckshot_roulette')
-    
-    if DATABASE_URL and DATABASE_URL.startswith('postgres://'):
-        DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
-    
-    # Connection Pool
-    DB_POOL_MIN = int(os.getenv('DB_POOL_MIN', '1'))
-    DB_POOL_MAX = int(os.getenv('DB_POOL_MAX', '10'))
+    # MongoDB Atlas
+    MONGODB_URL = os.getenv(
+        'MONGODB_URL', 
+        'mongodb://localhost:27017/'
+    )
+    DB_NAME = os.getenv('DB_NAME', 'buckshot_roulette')
     
     # API Settings
     API_TITLE = 'Buckshot Roulette API'
@@ -42,20 +39,28 @@ class Config:
 class DevelopmentConfig(Config):
     """Configuración para desarrollo"""
     DEBUG = True
-    DATABASE_URL = os.getenv('DATABASE_URL', 'postgresql://localhost/buckshot_roulette_dev')
+    MONGODB_URL = os.getenv(
+        'MONGODB_URL', 
+        'mongodb://localhost:27017/'
+    )
+    DB_NAME = os.getenv('DB_NAME', 'buckshot_roulette_dev')
 
 
 class ProductionConfig(Config):
     """Configuración para producción"""
     DEBUG = False
-    if not os.getenv('DATABASE_URL'):
-        raise ValueError("DATABASE_URL environment variable must be set in production")
+    if not os.getenv('MONGODB_URL'):
+        raise ValueError("MONGODB_URL environment variable must be set in production")
 
 
 class TestingConfig(Config):
     """Configuración para tests"""
     TESTING = True
-    DATABASE_URL = 'postgresql://localhost/buckshot_roulette_test'
+    MONGODB_URL = os.getenv(
+        'MONGODB_URL',
+        'mongodb://localhost:27017/'
+    )
+    DB_NAME = os.getenv('DB_NAME', 'buckshot_roulette_test')
 
 
 # Seleccionar configuración según entorno

@@ -1,5 +1,5 @@
 """
-API REST Flask - Servidor Buckshot Roulette
+API REST Flask - Servidor Buckshot Roulette (MongoDB Atlas)
 """
 from flask import Flask, jsonify, request, render_template_string
 from flask_cors import CORS
@@ -10,7 +10,7 @@ import os
 import random 
 
 from config import get_config
-from database import init_db
+from mongodb import init_db
 from models import BuckshotGame, Puntuacion, SesionJuego
 
 # Configurar logging
@@ -37,7 +37,7 @@ CORS(app, resources={
 # Inicializar database
 try:
     db = init_db(config)
-    logger.info("✅ Base de datos conectada correctamente")
+    logger.info("[OK] Base de datos conectada correctamente")
     
     # Hacer db disponible para models
     import models

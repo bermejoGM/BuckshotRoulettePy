@@ -4,6 +4,7 @@ Modelos de datos y lógica del juego
 import random
 import secrets
 from datetime import datetime
+from bson import ObjectId
 import logging
 
 logger = logging.getLogger(__name__)
@@ -101,28 +102,25 @@ class BuckshotGame:
 
 
 class Puntuacion:
-    """Modelo para manejar puntuaciones"""
+    """Modelo para manejar puntuaciones en MongoDB"""
     
     @staticmethod
     def guardar(nombre, puntos, session_id=None):
         """
-        Guardar puntuación en base de datos
+        Guardar puntuación en MongoDB
+        Returns: ID del documento insertado
         """
         try:
-            query = """
-                INSERT INTO puntuaciones (nombre, puntos, session_id, fecha)
-                VALUES (%s, %s, %s, %s)
-                RETURNING id
-            """
-            params = (nombre, puntos, session_id, datetime.now())
+            documento = {
+                'nombre': nombre,
+                'puntos': puntos,
+                'session_id': session_id,
+                'fecha': datetime.now()
+            }
             
-            result = db.execute_one(query, params)
-            
-            if result:
-                logger.info(f"Puntuación guardada: {nombre} - {puntos} pts")
-                return result[0]
-            
-            return None
+            result_id = db.insert_one('puntuaciones', documento)
+            logger.info(f"Puntuación guardada: {nombre} - {puntos} pts")
+            return str(result_id)
         
         except Exception as e:
             logger.error(f"Error al guardar puntuación: {e}")
@@ -131,26 +129,25 @@ class Puntuacion:
     @staticmethod
     def obtener_ranking(limite=10):
         """
-        Obtener top puntuaciones
+        Obtener top puntuaciones ordenadas por puntos descendentes
         """
         try:
-            query = """
-                SELECT nombre, puntos, fecha
-                FROM puntuaciones
-                ORDER BY puntos DESC, fecha DESC
-                LIMIT %s
-            """
-            
-            resultados = db.execute_query(query, (limite,), fetch=True)
+            # MongoDB query con sort
+            resultados = db.find(
+                'puntuaciones',
+                filter_dict={},
+                sort=[("puntos", -1), ("fecha", -1)],
+                limit=limite
+            )
             
             # Formatear resultados
             ranking = [
                 {
-                    'nombre': row[0],
-                    'puntos': row[1],
-                    'fecha': row[2].strftime('%Y-%m-%d %H:%M:%S') if row[2] else None
+                    'nombre': doc['nombre'],
+                    'puntos': doc['puntos'],
+                    'fecha': doc['fecha'].strftime('%Y-%m-%d %H:%M:%S') if doc.get('fecha') else None
                 }
-                for row in resultados
+                for doc in resultados
             ]
             
             return ranking
@@ -166,32 +163,203 @@ class Puntuacion:
         """
         try:
             if fecha_desde:
-                query = """
-                    SELECT nombre, puntos, fecha
-                    FROM puntuaciones
-                    WHERE fecha >= %s
-                    ORDER BY puntos DESC, fecha DESC
-                    LIMIT %s
-                """
-                params = (fecha_desde, limite)
+                # Filtro MongoDB para documentos con fecha >= fecha_desde
+                filter_dict = {'fecha': {'$gte': fecha_desde}}
             else:
-                query = """
-                    SELECT nombre, puntos, fecha
-                    FROM puntuaciones
-                    ORDER BY puntos DESC, fecha DESC
-                    LIMIT %s
-                """
-                params = (limite,)
+                filter_dict = {}
             
-            resultados = db.execute_query(query, params, fetch=True)
+            resultados = db.find(
+                'puntuaciones',
+                filter_dict=filter_dict,
+                sort=[("puntos", -1), ("fecha", -1)],
+                limit=limite
+            )
             
             ranking = [
                 {
-                    'nombre': row[0],
-                    'puntos': row[1],
-                    'fecha': row[2].strftime('%Y-%m-%d %H:%M:%S') if row[2] else None
+                    'nombre': doc['nombre'],
+                    'puntos': doc['puntos'],
+                    'fecha': doc['fecha'].strftime('%Y-%m-%d %H:%M:%S') if doc.get('fecha') else None
                 }
-                for row in resultados
+                for doc in resultados
+            ]
+            
+            return ranking
+        
+        except Exception as e:
+            logger.error(f"Error al obtener ranking por fecha: {e}")
+            raise
+    
+    @staticmethod
+    def obtener_estadisticas():
+        """
+        Obtener estadísticas globales del juego usando agregación
+        """
+        try:
+            # Pipeline de agregación MongoDB
+            pipeline = [
+                {
+                    '$group': {
+                        '_id': None,
+                        'total_partidas': {'$sum': 1},
+                        'promedio_puntos': {'$avg': '$puntos'},
+                        'max_puntos': {'$max': '$puntos'},
+                        'min_puntos': {'$min': '$puntos'}
+                    }
+                }
+            ]
+            
+            resultado = db.aggregate('puntuaciones', pipeline)
+            
+            if resultado:
+                doc = resultado[0]
+                return {
+                    'total_partidas': doc.get('total_partidas', 0),
+                    'promedio_puntos': round(doc.get('promedio_puntos', 0), 2),
+                    'max_puntos': doc.get('max_puntos', 0),
+                    'min_puntos': doc.get('min_puntos', 0)
+                }
+            
+            return {
+                'total_partidas': 0,
+                'promedio_puntos': 0,
+                'max_puntos': 0,
+                'min_puntos': 0
+            }
+        
+        except Exception as e:
+            logger.error(f"Error al obtener estadísticas: {e}")
+            raise
+
+
+class SesionJuego:
+    """Modelo para manejar sesiones de juego en MongoDB"""
+    
+    @staticmethod
+    def crear(session_id, nombre_jugador):
+        """Crear nueva sesión"""
+        try:
+            documento = {
+                'session_id': session_id,
+                'nombre_jugador': nombre_jugador,
+                'fecha_inicio': datetime.now(),
+                'fecha_fin': None,
+                'puntos_finales': None,
+                'balas_disparadas': 0
+            }
+            
+            result_id = db.insert_one('sesiones_juego', documento)
+            logger.info(f"Sesión creada: {nombre_jugador} - {session_id[:8]}...")
+            return str(result_id)
+        
+        except Exception as e:
+            logger.error(f"Error al crear sesión: {e}")
+            raise
+    
+    @staticmethod
+    def finalizar(session_id, puntos_finales, balas_disparadas):
+        """Finalizar sesión"""
+        try:
+            update_dict = {
+                'fecha_fin': datetime.now(),
+                'puntos_finales': puntos_finales,
+                'balas_disparadas': balas_disparadas
+            }
+            
+            db.update_one(
+                'sesiones_juego',
+                filter_dict={'session_id': session_id},
+                update_dict=update_dict
+            )
+            
+            logger.info(f"Sesión finalizada: {session_id[:8]}... - {puntos_finales} pts")
+        
+        except Exception as e:
+            logger.error(f"Error al finalizar sesión: {e}")
+            raise
+
+
+
+class Puntuacion:
+    """Modelo para manejar puntuaciones"""
+    
+    @staticmethod
+    def guardar(nombre, puntos, session_id=None):
+        """
+        Guardar puntuación en base de datos
+        """
+        try:
+            documento = {
+                'nombre': nombre,
+                'puntos': puntos,
+                'session_id': session_id,
+                'fecha': datetime.now()
+            }
+            
+            result = db.insert_one('puntuaciones', documento)
+            
+            if result is not None:
+                logger.info(f"Puntuación guardada: {nombre} - {puntos} pts")
+                return str(result)
+            
+            return None
+        
+        except Exception as e:
+            logger.error(f"Error al guardar puntuación: {e}")
+            raise
+    
+    @staticmethod
+    def obtener_ranking(limite=10):
+        """
+        Obtener top puntuaciones
+        """
+        try:
+            resultados = db.find(
+                'puntuaciones',
+                sort=[('puntos', -1)],
+                limit=limite
+            )
+            
+            # Formatear resultados
+            ranking = [
+                {
+                    'nombre': doc.get('nombre'),
+                    'puntos': doc.get('puntos'),
+                    'fecha': doc.get('fecha').strftime('%Y-%m-%d %H:%M:%S') if doc.get('fecha') else None
+                }
+                for doc in resultados
+            ]
+            
+            return ranking
+        
+        except Exception as e:
+            logger.error(f"Error al obtener ranking: {e}")
+            raise
+    
+    @staticmethod
+    def obtener_ranking_por_fecha(limite=10, fecha_desde=None):
+        """
+        Obtener ranking filtrado por fecha
+        """
+        try:
+            query_filter = {}
+            if fecha_desde:
+                query_filter = {'fecha': {'$gte': fecha_desde}}
+            
+            resultados = db.find(
+                'puntuaciones',
+                query_filter,
+                sort=[('puntos', -1)],
+                limit=limite
+            )
+            
+            ranking = [
+                {
+                    'nombre': doc.get('nombre'),
+                    'puntos': doc.get('puntos'),
+                    'fecha': doc.get('fecha').strftime('%Y-%m-%d %H:%M:%S') if doc.get('fecha') else None
+                }
+                for doc in resultados
             ]
             
             return ranking
@@ -206,23 +374,27 @@ class Puntuacion:
         Obtener estadísticas globales del juego
         """
         try:
-            query = """
-                SELECT 
-                    COUNT(*) as total_partidas,
-                    AVG(puntos) as promedio_puntos,
-                    MAX(puntos) as max_puntos,
-                    MIN(puntos) as min_puntos
-                FROM puntuaciones
-            """
+            pipeline = [
+                {
+                    '$group': {
+                        '_id': None,
+                        'total_partidas': {'$sum': 1},
+                        'promedio_puntos': {'$avg': '$puntos'},
+                        'max_puntos': {'$max': '$puntos'},
+                        'min_puntos': {'$min': '$puntos'}
+                    }
+                }
+            ]
             
-            resultado = db.execute_one(query)
+            resultado = list(db.aggregate('puntuaciones', pipeline))
             
             if resultado:
+                doc = resultado[0]
                 return {
-                    'total_partidas': resultado[0],
-                    'promedio_puntos': round(float(resultado[1]), 2) if resultado[1] else 0,
-                    'max_puntos': resultado[2],
-                    'min_puntos': resultado[3]
+                    'total_partidas': doc.get('total_partidas', 0),
+                    'promedio_puntos': round(float(doc.get('promedio_puntos', 0)), 2),
+                    'max_puntos': doc.get('max_puntos', 0),
+                    'min_puntos': doc.get('min_puntos', 0)
                 }
             
             return None
@@ -239,14 +411,14 @@ class SesionJuego:
     def crear(session_id, nombre_jugador):
         """Crear nueva sesión"""
         try:
-            query = """
-                INSERT INTO sesiones_juego (session_id, nombre_jugador)
-                VALUES (%s, %s)
-                RETURNING id
-            """
+            documento = {
+                'session_id': session_id,
+                'nombre_jugador': nombre_jugador,
+                'fecha_inicio': datetime.now()
+            }
             
-            result = db.execute_one(query, (session_id, nombre_jugador))
-            return result[0] if result else None
+            result = db.insert_one('sesiones_juego', documento)
+            return str(result) if result is not None else None
         
         except Exception as e:
             logger.error(f"Error al crear sesión: {e}")
@@ -256,15 +428,14 @@ class SesionJuego:
     def finalizar(session_id, puntos_finales, balas_disparadas):
         """Finalizar sesión"""
         try:
-            query = """
-                UPDATE sesiones_juego
-                SET fecha_fin = %s, puntos_finales = %s, balas_disparadas = %s
-                WHERE session_id = %s
-            """
-            
-            db.execute_query(
-                query,
-                (datetime.now(), puntos_finales, balas_disparadas, session_id)
+            db.update_one(
+                'sesiones_juego',
+                {'session_id': session_id},
+                {
+                    'fecha_fin': datetime.now(),
+                    'puntos_finales': puntos_finales,
+                    'balas_disparadas': balas_disparadas
+                }
             )
         
         except Exception as e:

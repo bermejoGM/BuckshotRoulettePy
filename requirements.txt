@@ -4,11 +4,11 @@ flask-cors==4.0.1
 python-dotenv==1.0.1
 
 # ==================== DATABASE ====================
-# psycopg2-binary: PostgreSQL adapter para Python
-psycopg2-binary==2.9.9
+# pymongo: MongoDB adapter para Python
+pymongo==4.6.0
 
 # ==================== CLIENTE PYGAME ====================
-pygame==2.6.0
+pygame==2.5.2
 
 # ==================== HTTP CLIENT ====================
 # requests: Para comunicación API en el cliente
