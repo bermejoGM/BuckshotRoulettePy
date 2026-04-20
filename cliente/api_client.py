@@ -95,7 +95,7 @@ class APIClient:
             with open(self.cache_file, 'w') as f:
                 json.dump(cache, f, indent=2)
             
-            print(f"💾 Puntuación guardada localmente (sin conexión)")
+            print(f"[SAVE] Puntuación guardada localmente (sin conexión)")
         
         except Exception as e:
             print(f"[ERROR] Error al guardar localmente: {e}")

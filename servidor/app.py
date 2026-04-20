@@ -1,9 +1,8 @@
 """
 API REST Flask - Servidor Buckshot Roulette (MongoDB Atlas)
 """
-from flask import Flask, jsonify, request, render_template_string
+from flask import Flask, jsonify, request, render_template
 from flask_cors import CORS
-from ranking_web import RankingWeb
 import logging
 from datetime import datetime
 import os 
@@ -21,7 +20,13 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Crear app Flask
-app = Flask(__name__)
+WEB_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'web'))
+app = Flask(
+    __name__,
+    template_folder=WEB_DIR,
+    static_folder=WEB_DIR,
+    static_url_path='/static'
+)
 config = get_config()
 app.config.from_object(config)
 
@@ -310,7 +315,7 @@ def obtener_estadisticas():
 
 @app.route('/')
 def index():
-    return render_template_string(RankingWeb.get_html())
+    return render_template('index.html')
 
 # ============== ERROR HANDLERS ==============
 
