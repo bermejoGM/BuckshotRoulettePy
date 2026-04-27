@@ -128,17 +128,20 @@ class PantallaInicio:
         self.btn_ver_puntuaciones.check_hover(pygame.mouse.get_pos())
         
         # Procesar eventos
+        click_pos = None
         for event in events:
             enter_pressed = self.input_box.handle_event(event)
             if enter_pressed and self.input_box.text.strip():
                 return {'tipo': 'iniciar_juego', 'nombre': self.input_box.text.strip()}
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                click_pos = event.pos
         
         # Click en botón
-        if self.btn_iniciar.check_click(pygame.mouse.get_pos(), pygame.mouse.get_pressed()):
+        if click_pos and self.btn_iniciar.rect.collidepoint(click_pos):
             if self.input_box.text.strip():
                 return {'tipo': 'iniciar_juego', 'nombre': self.input_box.text.strip()}
 
-        if self.btn_ver_puntuaciones.check_click(pygame.mouse.get_pos(), pygame.mouse.get_pressed()):
+        if click_pos and self.btn_ver_puntuaciones.rect.collidepoint(click_pos):
             return {'tipo': 'ver_puntuaciones'}
         
         return None
@@ -177,7 +180,11 @@ class PantallaJuego:
         self.puntos = datos.get('puntos', self.puntos)
         self.balas_restantes = datos.get('balas_restantes', self.balas_restantes)
         self.mensaje = datos.get('mensaje', self.mensaje)
-        self.turno_jugador = not datos.get('cambiar_turno', False) if datos.get('cambiar_turno') is not None else self.turno_jugador
+        if 'turno_jugador' in datos:
+            self.turno_jugador = bool(datos.get('turno_jugador'))
+        elif 'cambiar_turno' in datos:
+            if datos.get('cambiar_turno'):
+                self.turno_jugador = not self.turno_jugador
     
     def dibujar_stat_box(self, x, y, label, valor, color=(255, 0, 0)):
         """Dibujar caja de estadística"""
@@ -237,6 +244,11 @@ class PantallaJuego:
         # Botones según turno
         accion = None
         
+        click_pos = None
+        for event in events:
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                click_pos = event.pos
+
         if self.turno_jugador:
             self.btn_disparar_bot.draw(self.screen)
             self.btn_disparar_self.draw(self.screen)
@@ -244,15 +256,15 @@ class PantallaJuego:
             self.btn_disparar_bot.check_hover(pygame.mouse.get_pos())
             self.btn_disparar_self.check_hover(pygame.mouse.get_pos())
             
-            if self.btn_disparar_bot.check_click(pygame.mouse.get_pos(), pygame.mouse.get_pressed()):
+            if click_pos and self.btn_disparar_bot.rect.collidepoint(click_pos):
                 accion = {'tipo': 'disparar', 'objetivo': 'bot'}
-            elif self.btn_disparar_self.check_click(pygame.mouse.get_pos(), pygame.mouse.get_pressed()):
+            elif click_pos and self.btn_disparar_self.rect.collidepoint(click_pos):
                 accion = {'tipo': 'disparar', 'objetivo': 'jugador'}
         else:
             self.btn_turno_bot.draw(self.screen)
             self.btn_turno_bot.check_hover(pygame.mouse.get_pos())
             
-            if self.btn_turno_bot.check_click(pygame.mouse.get_pos(), pygame.mouse.get_pressed()):
+            if click_pos and self.btn_turno_bot.rect.collidepoint(click_pos):
                 accion = {'tipo': 'turno_bot'}
         
         return accion
@@ -273,7 +285,7 @@ class PantallaRanking:
         self.nombre_jugador = ""
         
         # Botones
-        self.btn_reiniciar = Button(250, 520, 300, 50, "NUEVA PARTIDA",
+        self.btn_reiniciar = Button(250, 520, 300, 50, "MENU PRINCIPAL",
                                      (0, 150, 0), (0, 200, 0))
     
     def actualizar_ranking(self, ranking, puntos, nombre):
@@ -338,8 +350,10 @@ class PantallaRanking:
         self.btn_reiniciar.draw(self.screen)
         self.btn_reiniciar.check_hover(pygame.mouse.get_pos())
         
-        if self.btn_reiniciar.check_click(pygame.mouse.get_pos(), pygame.mouse.get_pressed()):
-            return {'tipo': 'reiniciar'}
+        for event in events:
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                if self.btn_reiniciar.rect.collidepoint(event.pos):
+                    return {'tipo': 'reiniciar'}
         
         return None
 
@@ -398,7 +412,9 @@ class PantallaPuntuaciones:
         self.btn_volver_menu.draw(self.screen)
         self.btn_volver_menu.check_hover(pygame.mouse.get_pos())
 
-        if self.btn_volver_menu.check_click(pygame.mouse.get_pos(), pygame.mouse.get_pressed()):
-            return {'tipo': 'volver_inicio'}
+        for event in events:
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                if self.btn_volver_menu.rect.collidepoint(event.pos):
+                    return {'tipo': 'volver_inicio'}
 
         return None

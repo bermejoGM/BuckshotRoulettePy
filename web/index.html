@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Ranking global de Buckshot Roulette - El juego más peligroso">
     <title>🎰 Buckshot Roulette - Ranking Global</title>
-    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="background-animation"></div>
@@ -86,10 +86,18 @@
     
     <script>
         let intervalId = null;
+        const API_BASE = window.location.protocol === 'file:'
+            ? 'http://localhost:5000/api'
+            : `${window.location.origin}/api`;
         
         // Función para formatear fecha
         function formatearFecha(fecha) {
-            const date = new Date(fecha);
+            // Soporta fechas "YYYY-MM-DD HH:mm:ss" que no todos los navegadores parsean igual
+            const normalizada = typeof fecha === 'string' ? fecha.replace(' ', 'T') : fecha;
+            const date = new Date(normalizada);
+            if (Number.isNaN(date.getTime())) {
+                return fecha || '-';
+            }
             const opciones = { 
                 year: 'numeric', 
                 month: 'short', 
@@ -134,12 +142,12 @@
                 document.getElementById('error-message').style.display = 'none';
                 
                 // Cargar ranking
-                const rankingRes = await fetch('/api/ranking?limite=10');
+                const rankingRes = await fetch(`${API_BASE}/ranking?limite=10`);
                 if (!rankingRes.ok) throw new Error('Error al cargar ranking');
                 const rankingData = await rankingRes.json();
                 
                 // Cargar estadísticas
-                const statsRes = await fetch('/api/estadisticas');
+                const statsRes = await fetch(`${API_BASE}/estadisticas`);
                 if (!statsRes.ok) throw new Error('Error al cargar estadísticas');
                 const statsData = await statsRes.json();
                 

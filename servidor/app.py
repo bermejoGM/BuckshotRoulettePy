@@ -110,10 +110,6 @@ def disparar():
         session_id = data.get('session_id')
         objetivo = data.get('objetivo')
         
-        print("Datos de session_id", session_id)
-        print("Datos de objetivo", objetivo)
-        print("Datos de sesiones", sesiones.keys())
-        
         # Validar sesión
         if session_id not in sesiones:
             return jsonify({'error': True, 'mensaje': 'Sesión inválida'}), 400
