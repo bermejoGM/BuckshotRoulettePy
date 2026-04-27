@@ -92,6 +92,8 @@ class PantallaInicio:
         # Botón iniciar
         self.btn_iniciar = Button(250, 400, 300, 60, "COMENZAR", 
                                    (200, 0, 0), (255, 0, 0))
+        self.btn_ver_puntuaciones = Button(250, 480, 300, 50, "VER PUNTUACIONES",
+                           (60, 60, 60), (100, 100, 100))
     
     def render(self, events):
         # Fondo degradado
@@ -121,7 +123,9 @@ class PantallaInicio:
         
         # Botón
         self.btn_iniciar.draw(self.screen)
+        self.btn_ver_puntuaciones.draw(self.screen)
         self.btn_iniciar.check_hover(pygame.mouse.get_pos())
+        self.btn_ver_puntuaciones.check_hover(pygame.mouse.get_pos())
         
         # Procesar eventos
         for event in events:
@@ -133,6 +137,9 @@ class PantallaInicio:
         if self.btn_iniciar.check_click(pygame.mouse.get_pos(), pygame.mouse.get_pressed()):
             if self.input_box.text.strip():
                 return {'tipo': 'iniciar_juego', 'nombre': self.input_box.text.strip()}
+
+        if self.btn_ver_puntuaciones.check_click(pygame.mouse.get_pos(), pygame.mouse.get_pressed()):
+            return {'tipo': 'ver_puntuaciones'}
         
         return None
 
@@ -334,4 +341,64 @@ class PantallaRanking:
         if self.btn_reiniciar.check_click(pygame.mouse.get_pos(), pygame.mouse.get_pressed()):
             return {'tipo': 'reiniciar'}
         
+        return None
+
+
+class PantallaPuntuaciones:
+    """Pantalla de puntuaciones finales"""
+    def __init__(self, screen, width, height):
+        self.screen = screen
+        self.width = width
+        self.height = height
+        self.font_titulo = pygame.font.Font(None, 56)
+        self.font_item = pygame.font.Font(None, 28)
+
+        self.ranking = []
+
+        # Botón para volver al menú principal
+        self.btn_volver_menu = Button(220, 520, 360, 50, "VOLVER AL MENU PRINCIPAL",
+                                      (60, 60, 60), (100, 100, 100))
+
+    def actualizar_ranking(self, ranking):
+        """Actualizar lista de puntuaciones"""
+        self.ranking = ranking
+
+    def render(self, events):
+        # Fondo
+        self.screen.fill((20, 20, 20))
+
+        # Título
+        titulo = self.font_titulo.render("PUNTUACIONES FINALES", True, (255, 200, 0))
+        titulo_rect = titulo.get_rect(center=(self.width // 2, 60))
+        self.screen.blit(titulo, titulo_rect)
+
+        # Lista de puntuaciones
+        y = 120
+        for i, item in enumerate(self.ranking[:10], 1):
+            nombre = item.get('nombre', 'Unknown') if isinstance(item, dict) else item[0]
+            puntos = item.get('puntos', 0) if isinstance(item, dict) else item[1]
+            fecha = item.get('fecha', '') if isinstance(item, dict) else item[2]
+
+            item_rect = pygame.Rect(100, y, 600, 34)
+            color_fondo = (50, 50, 50) if i % 2 == 0 else (40, 40, 40)
+            pygame.draw.rect(self.screen, color_fondo, item_rect, border_radius=5)
+
+            pos_texto = self.font_item.render(f"{i}. {nombre}", True, (255, 255, 255))
+            self.screen.blit(pos_texto, (110, y + 7))
+
+            fecha_texto = self.font_item.render(fecha, True, (150, 150, 150))
+            self.screen.blit(fecha_texto, (320, y + 7))
+
+            puntos_texto = self.font_item.render(f"{puntos} pts", True, (255, 200, 0))
+            self.screen.blit(puntos_texto, (600, y + 7))
+
+            y += 36
+
+        # Botón volver
+        self.btn_volver_menu.draw(self.screen)
+        self.btn_volver_menu.check_hover(pygame.mouse.get_pos())
+
+        if self.btn_volver_menu.check_click(pygame.mouse.get_pos(), pygame.mouse.get_pressed()):
+            return {'tipo': 'volver_inicio'}
+
         return None

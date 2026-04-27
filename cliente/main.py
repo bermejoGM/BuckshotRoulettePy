@@ -4,7 +4,7 @@ Main entry point
 """
 import pygame
 import sys
-from pantallas import PantallaInicio, PantallaJuego, PantallaRanking
+from pantallas import PantallaInicio, PantallaJuego, PantallaRanking, PantallaPuntuaciones
 from api_client import APIClient
 
 class BuckshotRouletteGame:
@@ -33,7 +33,8 @@ class BuckshotRouletteGame:
         self.pantallas = {
             "inicio": PantallaInicio(self.screen, self.WIDTH, self.HEIGHT),
             "juego": PantallaJuego(self.screen, self.WIDTH, self.HEIGHT),
-            "ranking": PantallaRanking(self.screen, self.WIDTH, self.HEIGHT)
+            "ranking": PantallaRanking(self.screen, self.WIDTH, self.HEIGHT),
+            "puntuaciones": PantallaPuntuaciones(self.screen, self.WIDTH, self.HEIGHT)
         }
         
     def iniciar_juego(self, nombre):
@@ -87,17 +88,19 @@ class BuckshotRouletteGame:
         resultado = self.api_client.obtener_ranking()
         
         if resultado and not resultado.get('error'):
+            ranking = resultado.get('ranking', [])
             self.pantallas["ranking"].actualizar_ranking(
-                resultado.get('ranking', []),
+                ranking,
                 self.datos_juego.get('puntos', 0),
                 self.nombre_jugador
             )
+            self.pantallas["puntuaciones"].actualizar_ranking(ranking)
     
     def cambiar_pantalla(self, nueva_pantalla):
         """Cambiar de pantalla"""
         self.pantalla_actual = nueva_pantalla
         
-        if nueva_pantalla == "ranking":
+        if nueva_pantalla in ("ranking", "puntuaciones"):
             self.cargar_ranking()
     
     def reiniciar_juego(self):
@@ -134,6 +137,12 @@ class BuckshotRouletteGame:
                 
                 elif accion['tipo'] == 'ver_ranking':
                     self.cambiar_pantalla('ranking')
+
+                elif accion['tipo'] == 'ver_puntuaciones':
+                    self.cambiar_pantalla('puntuaciones')
+
+                elif accion['tipo'] == 'volver_inicio':
+                    self.cambiar_pantalla('inicio')
                 
                 elif accion['tipo'] == 'reiniciar':
                     self.reiniciar_juego()
