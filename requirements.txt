@@ -1,35 +1,29 @@
 # ==================== CORE FRAMEWORK ====================
+# Flask: Microframework web para Python
 Flask==3.0.3
+
+# flask-cors: Soporte CORS para Flask (requisito API REST)
 flask-cors==4.0.1
+
+# python-dotenv: Carga de variables de entorno desde .env
 python-dotenv==1.0.1
 
 # ==================== DATABASE ====================
-# pymongo: MongoDB adapter para Python
+# pymongo: Adaptador oficial de MongoDB para Python
 pymongo==4.6.0
 
 # ==================== CLIENTE PYGAME ====================
+# pygame: Framework para desarrollo de juegos 2D
 pygame==2.5.2
 
 # ==================== HTTP CLIENT ====================
-# requests: Para comunicación API en el cliente
+# requests: Cliente HTTP para comunicación con API del servidor
 requests==2.31.0
 
 # ==================== SERVIDOR PRODUCCIÓN ====================
-# gunicorn: WSGI server para producción
+# gunicorn: WSGI server de producción para Flask
 gunicorn==22.0.0
 
 # ==================== UTILIDADES ====================
-# Werkzeug: Utilidades WSGI (viene con Flask pero especificamos versión)
+# Werkzeug: Utilidades WSGI y herramientas web (incluido en Flask)
 Werkzeug==3.0.1
-
-# ==================== DESARROLLO (OPCIONAL) ====================
-# pytest: Testing
-# pytest==8.0.0
-# pytest-cov==4.1.0
-
-# black: Code formatter
-# black==24.1.1
-
-# flake8: Linter
-# flake8==7.0.0
-
