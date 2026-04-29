@@ -90,11 +90,10 @@ class PantallaInicio:
         self.input_box = InputBox(200, 300, 400, 50, "Ingresa tu nombre")
         
         # Botón iniciar
-        self.btn_iniciar = Button(250, 400, 300, 60, "COMENZAR", 
-                                   (200, 0, 0), (255, 0, 0))
-        self.btn_ver_puntuaciones = Button(250, 480, 300, 50, "VER PUNTUACIONES",
-                           (60, 60, 60), (100, 100, 100))
-    
+        self.btn_iniciar = Button(250, 390, 300, 55, "COMENZAR", (200, 0, 0), (255, 0, 0))
+        self.btn_ver_puntuaciones = Button(250, 455, 300, 45, "VER PUNTUACIONES", (60, 60, 60), (100, 100, 100))
+        self.btn_abrir_web = Button(250, 515, 300, 45, "ABRIR WEB", (60, 60, 60), (100, 100, 100))
+
     def render(self, events):
         # Fondo degradado
         self.screen.fill((30, 0, 0))
@@ -124,8 +123,10 @@ class PantallaInicio:
         # Botón
         self.btn_iniciar.draw(self.screen)
         self.btn_ver_puntuaciones.draw(self.screen)
+        self.btn_abrir_web.draw(self.screen)
         self.btn_iniciar.check_hover(pygame.mouse.get_pos())
         self.btn_ver_puntuaciones.check_hover(pygame.mouse.get_pos())
+        self.btn_abrir_web.check_hover(pygame.mouse.get_pos())
         
         # Procesar eventos
         click_pos = None
@@ -143,6 +144,9 @@ class PantallaInicio:
 
         if click_pos and self.btn_ver_puntuaciones.rect.collidepoint(click_pos):
             return {'tipo': 'ver_puntuaciones'}
+
+        if click_pos and self.btn_abrir_web.rect.collidepoint(click_pos):
+            return {'tipo': 'abrir_web'}
         
         return None
 

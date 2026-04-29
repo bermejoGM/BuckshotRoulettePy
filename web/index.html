@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Ranking global de Buckshot Roulette - El juego más peligroso">
     <title>🎰 Buckshot Roulette - Ranking Global</title>
-    <link rel="stylesheet" href="styles.css">
+    <link id="main-stylesheet" rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="background-animation"></div>
@@ -13,13 +13,13 @@
     <div class="container">
         <!-- Header -->
         <header>
-            <h1 class="title">🎰 BUCKSHOT ROULETTE</h1>
+            <h1 class="title">BUCKSHOT ROULETTE</h1>
             <p class="subtitle">El juego de la ruleta rusa con escopeta</p>
         </header>
         
         <!-- Estadísticas Globales -->
         <section class="stats-section">
-            <h2 class="section-title">📊 Estadísticas Globales</h2>
+            <h2 class="section-title">Estadísticas Globales</h2>
             <div class="stats-grid" id="stats">
                 <div class="stat-box">
                     <div class="stat-icon">🎮</div>
@@ -89,6 +89,11 @@
         const API_BASE = window.location.protocol === 'file:'
             ? 'http://localhost:5000/api'
             : `${window.location.origin}/api`;
+
+        const stylesheet = document.getElementById('main-stylesheet');
+        if (stylesheet && window.location.protocol !== 'file:') {
+            stylesheet.href = '/static/styles.css';
+        }
         
         // Función para formatear fecha
         function formatearFecha(fecha) {

@@ -3,6 +3,7 @@ Buckshot Roulette - Cliente Pygame
 Main entry point
 """
 import pygame
+import webbrowser
 import sys
 from pantallas import PantallaInicio, PantallaJuego, PantallaRanking, PantallaPuntuaciones
 from api_client import APIClient
@@ -108,6 +109,10 @@ class BuckshotRouletteGame:
         self.pantalla_actual = "inicio"
         self.datos_juego = {}
         self.nombre_jugador = ""
+
+    def abrir_web(self):
+        """Abrir la web del juego en el navegador"""
+        webbrowser.open_new_tab("http://localhost:5000")
     
     def run(self):
         """Loop principal del juego"""
@@ -140,6 +145,9 @@ class BuckshotRouletteGame:
 
                 elif accion['tipo'] == 'ver_puntuaciones':
                     self.cambiar_pantalla('puntuaciones')
+
+                elif accion['tipo'] == 'abrir_web':
+                    self.abrir_web()
 
                 elif accion['tipo'] == 'volver_inicio':
                     self.cambiar_pantalla('inicio')
