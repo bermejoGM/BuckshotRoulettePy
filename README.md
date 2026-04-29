@@ -17,39 +17,11 @@ El proyecto está pensado para ejecutarse en local y permite:
 
 ## Instalación
 
-### 1. Clonar el repositorio
+### Clonar el repositorio
 
 ```bash
 git clone <URL_DEL_REPOSITORIO>
 cd BuckshotRoulettePy
-```
-
-### 2. Crear entorno virtual (recomendado)
-
-```bash
-python -m venv venv
-```
-
-Activar entorno virtual:
-
-* **Windows**
-
-```bash
-venv\Scripts\activate
-```
-
-* **Linux / macOS**
-
-```bash
-source venv/bin/activate
-```
-
-### 3. Instalar dependencias
-
-Las dependencias del proyecto están definidas en `requirements.txt`.
-
-```bash
-pip install -r requirements.txt
 ```
 
 ---
@@ -75,12 +47,13 @@ Estas dependencias incluyen las librerías necesarias para:
 
 ## Ejecutar el proyecto
 
-Para iniciar el juego, en la raiz del proyecto:
+En la raiz del proyecto aparecerán 2 archivos start_all, el .bat es especifico para windows y el .py es multiplataforma. Estos archivos ya tienen todo lo necesario para crear un entorno virtual si no está creado e instalar las dependencias si no las detecta.
 
 ```bash
-.\start_all.py
+.\start_all.py | .\start_all.bat
 ```
 
+A la hora de cerrar el juego, seguirán abiertas las ventanas de la terminal, deberán cerrarse manualmente aunque no afecta en nada que se vuelva a ejecutar y haya varias abiertas.
 ---
 
 ## Servidor de puntuaciones
